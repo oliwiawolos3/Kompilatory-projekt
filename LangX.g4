@@ -25,10 +25,10 @@ value: ID (LBR expr RBR)?
    | REAL
    | FLOAT
    | TRUE
-   | FALSE;
+   | FALSE
+   | STRING;
 
 WRITE:	'write' ;
-
 READ:	'read' ;
 ARRAY:	'array' ;
 
@@ -37,6 +37,7 @@ RBR:	']' ;
 
 TRUE:  'true' ;
 FALSE: 'false' ;
+
 AND:   'and' ;
 OR:    'or' ;
 XOR:   'xor' ;
@@ -46,7 +47,9 @@ ID:   ('a'..'z'|'A'..'Z')+;
 FLOAT: '0'..'9'+ '.' '0'..'9'+ 'f';
 REAL: '0'..'9'+ '.' '0'..'9'+;
 INT:   '0'..'9'+;
+STRING: '\'' ~'\''* '\'';
 
+ASSIGN: '=' ;
 ADD: '+';
 SUB: '-' ;
 MUL: '*' ;
