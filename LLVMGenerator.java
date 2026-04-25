@@ -32,6 +32,15 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 "+id+")\n";
       tmp++;
    }
+   static void scanf_double(String id){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), double* "+id+")\n";
+      tmp++;      
+   }
+
+   static void printf_double(String id){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @strpd, i32 0, i32 0), double "+id+")\n";
+      tmp++;
+   }
 
    static void declare(String id, Boolean global){
       if( global ){
@@ -80,6 +89,8 @@ class LLVMGenerator{
       text += "declare i32 @__isoc99_scanf(i8*, ...)\n";
       text += "@strp = constant [4 x i8] c\"%d\\0A\\00\"\n";
       text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
+      text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
+      text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
       text += header_text;
       text += "define i32 @main() nounwind{\n";
       text += main_text;

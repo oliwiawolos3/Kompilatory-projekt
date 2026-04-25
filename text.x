@@ -1,2 +1,6 @@
-x = 5
-y = 3.14
+x = 0
+y = 0.0
+read x
+read y
+write x
+write y

@@ -93,7 +93,15 @@ public class LLVMActions extends LangXBaseListener {
 
     @Override
     public void exitWrite(LangXParser.WriteContext ctx) {
-       LLVMGenerator.printf(value);
+      String id = ctx.ID().getText();
+      VarType type = globalTypes.get(id);
+      if( type == VarType.INT ){
+         LLVMGenerator.load("@"+id);
+         LLVMGenerator.printf("%"+(LLVMGenerator.tmp-1));
+      } else {
+         LLVMGenerator.load_double("@"+id);
+         LLVMGenerator.printf_double("%"+(LLVMGenerator.tmp-1));
+      }
     } 
 /*
     @Override
@@ -104,8 +112,10 @@ public class LLVMActions extends LangXBaseListener {
 
     @Override
     public void exitRead(LangXParser.ReadContext ctx) {
-       String ID = ctx.ID().getText();
-       LLVMGenerator.scanf( set_variable(ID, VarType.INT) );
+      String id = ctx.ID().getText();
+      VarType type = globalTypes.get(id);
+      if( type == VarType.INT ) LLVMGenerator.scanf("@"+id);
+      else                       LLVMGenerator.scanf_double("@"+id);
     } 
   
     public String set_variable(String ID, VarType type){
