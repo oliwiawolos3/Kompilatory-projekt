@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 
 class LLVMGenerator{
    
@@ -6,6 +7,7 @@ class LLVMGenerator{
    static int main_tmp = 1;
    static String buffer = "";
    static int tmp = 1;
+   static int strLitCounter = 0;
 
    static void functionstart(String id){
       main_text += buffer;
@@ -185,6 +187,44 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @strpd, i32 0, i32 0), double %"+(tmp-1)+")\n";
       tmp++;
    }
+
+   static String defineStringLiteral(String s){
+      byte[] b = s.getBytes(StandardCharsets.UTF_8);
+      StringBuilder lit = new StringBuilder();
+      for (byte x : b) {
+         int u = x & 0xff;
+         if (u == '\\') lit.append("\\5C");
+         else if (u == '"') lit.append("\\22");
+         else if (u >= 32 && u < 127) lit.append((char) u);
+         else lit.append(String.format("\\%02X", u));
+      }
+      int n = b.length + 1;
+      String name = ".str." + (strLitCounter++);
+      header_text += "@"+name+" = private unnamed_addr constant ["+n+" x i8] c\""+lit+"\\00\"\n";
+      return "getelementptr inbounds (["+n+" x i8], ["+n+" x i8]* @"+name+", i64 0, i64 0)";
+   }
+
+   static void declare_string(String id, Boolean global){
+      if( global ){
+         header_text += "@"+id+" = global i8* null\n";
+      } else {
+         buffer += "%"+id+" = alloca i8*\n";
+      }
+   }
+
+   static void assign_string(String id, String ptrVal){
+      buffer += "store i8* "+ptrVal+", i8** "+id+"\n";
+   }
+
+   static void load_string(String id){
+      buffer += "%"+tmp+" = load i8*, i8** "+id+"\n";
+      tmp++;
+   }
+
+   static void printf_string(String id){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strpss, i32 0, i32 0), i8* "+id+")\n";
+      tmp++;
+   }
    static void close_main(){
       main_text += buffer;
    }
@@ -197,6 +237,7 @@ class LLVMGenerator{
       text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
       text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
       text += "@strsf = constant [3 x i8] c\"%f\\00\"\n";
+      text += "@strpss = constant [4 x i8] c\"%s\\0A\\00\"\n";
       text += header_text;
       text += "define i32 @main() nounwind{\n";
       text += main_text;
