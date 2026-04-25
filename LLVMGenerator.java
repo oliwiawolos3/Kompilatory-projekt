@@ -145,7 +145,46 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = xor i1 "+val+", 1\n";
       tmp++;
    }
-
+   static void declare_float(String id, Boolean global){
+      if( global ){
+         header_text += "@"+id+" = global float 0.0\n";
+      } else {
+         buffer += "%"+id+" = alloca float\n";
+      }
+   }
+   static void assign_float(String id, String value){
+      buffer += "store float "+value+", float* "+id+"\n";
+   }
+   static void load_float(String id){
+      buffer += "%"+tmp+" = load float, float* "+id+"\n";
+      tmp++;
+   }
+   static void add_float(String val1, String val2){
+      buffer += "%"+tmp+" = fadd float "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void sub_float(String val1, String val2){
+      buffer += "%"+tmp+" = fsub float "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void mul_float(String val1, String val2){
+      buffer += "%"+tmp+" = fmul float "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void div_float(String val1, String val2){
+      buffer += "%"+tmp+" = fdiv float "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void scanf_float(String id){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strsf, i32 0, i32 0), float* "+id+")\n";
+      tmp++;
+   }
+   static void printf_float(String id){
+      buffer += "%"+tmp+" = fpext float "+id+" to double\n";
+      tmp++;
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @strpd, i32 0, i32 0), double %"+(tmp-1)+")\n";
+      tmp++;
+   }
    static void close_main(){
       main_text += buffer;
    }
@@ -157,6 +196,7 @@ class LLVMGenerator{
       text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
       text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
       text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
+      text += "@strsf = constant [3 x i8] c\"%f\\00\"\n";
       text += header_text;
       text += "define i32 @main() nounwind{\n";
       text += main_text;

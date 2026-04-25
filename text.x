@@ -1,8 +1,7 @@
-x = 0
-y = 0.0
-read x
-read y
-write x
+y = 0.0f
+y = 10.0f - 3.0f
 write y
-x = 2 + 3 * 4
-write x
+y = 10.0f / 2.0f
+write y
+y = 10.0f * 5.0f
+write y

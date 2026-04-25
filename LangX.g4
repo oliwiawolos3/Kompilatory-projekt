@@ -20,6 +20,7 @@ expr: NEG expr       #neg
 value: ID
    | INT
    | REAL
+   | FLOAT
    | TRUE
    | FALSE;
 
@@ -34,6 +35,7 @@ XOR:   'xor' ;
 NEG:   'not' ;
 ID:   ('a'..'z'|'A'..'Z')+;
 
+FLOAT: '0'..'9'+ '.' '0'..'9'+ 'f';
 REAL: '0'..'9'+ '.' '0'..'9'+;
 INT:   '0'..'9'+;
 
