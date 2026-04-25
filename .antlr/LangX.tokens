@@ -1,0 +1,13 @@
+T__0=1
+WRITE=2
+READ=3
+ID=4
+REAL=5
+INT=6
+ADD=7
+NEWLINE=8
+WS=9
+'='=1
+'write'=2
+'read'=3
+'+'=7
