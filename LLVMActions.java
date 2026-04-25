@@ -16,6 +16,8 @@ public class LLVMActions extends LangXBaseListener {
     HashSet<String> localnames = new HashSet<String>(); 
     HashMap<String, VarType> globalTypes = new HashMap<String, VarType>();
     HashMap<String, VarType> localTypes  = new HashMap<String, VarType>();
+    /** Nazwy tablic całkowitych globalnych → rozmiar (tylko int[]). */
+    HashMap<String, Integer> arraySizes = new HashMap<String, Integer>();
     VarType valueType;
     String value, function;
     Boolean global;
@@ -56,8 +58,59 @@ public class LLVMActions extends LangXBaseListener {
     }
 */
     @Override
+    public void exitArrayDecl(LangXParser.ArrayDeclContext ctx) {
+      String ID = ctx.ID().getText();
+      int size = Integer.parseInt(ctx.INT().getText());
+      if (size <= 0) {
+         error(ctx.getStart().getLine(), "rozmiar tablicy musi byc dodatni");
+      }
+      if (arraySizes.containsKey(ID) || globalnames.contains(ID)) {
+         error(ctx.getStart().getLine(), "identyfikator "+ID+" jest juz zajety");
+      }
+      arraySizes.put(ID, Integer.valueOf(size));
+      LLVMGenerator.declare_array_int(ID, size, global);
+   }
+
+    @Override
+    public void exitAssignElem(LangXParser.AssignElemContext ctx) {
+      String ID = ctx.ID().getText();
+      if (!arraySizes.containsKey(ID)) {
+         error(ctx.getStart().getLine(), ID+" nie jest tablica (zadeklaruj: array "+ID+" [rozmiar])");
+      }
+      Value rhs = stack.pop();
+      Value idx = stack.pop();
+      if (idx.type != VarType.INT) {
+         error(ctx.getStart().getLine(), "indeks tablicy musi byc int");
+      }
+      if (rhs.type != VarType.INT) {
+         error(ctx.getStart().getLine(), "do tablicy int mozna przypisac tylko int");
+      }
+      int sz = arraySizes.get(ID).intValue();
+      String ptr = LLVMGenerator.gep_array_int_elem(ID, sz, idx.name, global);
+      LLVMGenerator.store_int_to_ptr(ptr, rhs.name);
+   }
+
+    @Override
+    public void exitReadElem(LangXParser.ReadElemContext ctx) {
+      String ID = ctx.ID().getText();
+      if (!arraySizes.containsKey(ID)) {
+         error(ctx.getStart().getLine(), "read z indeksem wymaga tablicy");
+      }
+      Value idx = stack.pop();
+      if (idx.type != VarType.INT) {
+         error(ctx.getStart().getLine(), "indeks tablicy musi byc int");
+      }
+      int sz = arraySizes.get(ID).intValue();
+      String ptr = LLVMGenerator.gep_array_int_elem(ID, sz, idx.name, global);
+      LLVMGenerator.scanf_int_ptr(ptr);
+   }
+
+    @Override
     public void exitAssign(LangXParser.AssignContext ctx) { 
       String ID = ctx.ID().getText();
+      if (arraySizes.containsKey(ID)) {
+         error(ctx.getStart().getLine(), "tablice zapisuje sie jako "+ID+"[indeks] = wyrazenie");
+      }
       Value v = stack.pop();
       String fullId = set_variable(ID, v.type);
       if      (v.type == VarType.INT)   LLVMGenerator.assign(fullId, v.name);
@@ -70,6 +123,25 @@ public class LLVMActions extends LangXBaseListener {
     public void exitValue(LangXParser.ValueContext ctx) { 
       if( ctx.ID() != null ){
          String ID = ctx.ID().getText();
+         if( ctx.LBR() != null ) {
+               if( ! arraySizes.containsKey(ID) ){
+                  error(ctx.getStart().getLine(), "indeksowanie: "+ID+" nie jest tablica");
+               }
+               Value idx = stack.pop();
+               if( idx.type != VarType.INT ){
+                  error(ctx.getStart().getLine(), "indeks tablicy musi byc int");
+               }
+               int sz = arraySizes.get(ID).intValue();
+               String ptr = LLVMGenerator.gep_array_int_elem(ID, sz, idx.name, global);
+               LLVMGenerator.load_int_from_ptr(ptr);
+               valueType = VarType.INT;
+               value = "%"+(LLVMGenerator.tmp-1);
+               stack.push(new Value(value, valueType));
+               return;
+         }
+         if( arraySizes.containsKey(ID) ){
+               error(ctx.getStart().getLine(), "tablica "+ID+" wymaga indeksu [...] albo uzyj write "+ID);
+         }
          if( localnames.contains(ID) ) {
                VarType t = localTypes.get(ID);
                if      (t == VarType.INT)   LLVMGenerator.load("%"+ID);
@@ -222,6 +294,10 @@ public class LLVMActions extends LangXBaseListener {
     @Override
    public void exitWrite(LangXParser.WriteContext ctx) {
       String id = ctx.ID().getText();
+      if( arraySizes.containsKey(id) ){
+         LLVMGenerator.printf_array_int(id, arraySizes.get(id).intValue(), global);
+         return;
+      }
       VarType type = globalTypes.get(id);
       if( type == VarType.INT ){
          LLVMGenerator.load("@"+id);
@@ -247,6 +323,9 @@ public class LLVMActions extends LangXBaseListener {
     @Override
    public void exitRead(LangXParser.ReadContext ctx) {
       String id = ctx.ID().getText();
+      if( arraySizes.containsKey(id) ){
+         error(ctx.getStart().getLine(), "dla tablicy uzyj: read "+id+"[indeks]");
+      }
       VarType type = globalTypes.get(id);
       if      ( type == VarType.INT  )  LLVMGenerator.scanf("@"+id);
       else if ( type == VarType.REAL )  LLVMGenerator.scanf_double("@"+id);

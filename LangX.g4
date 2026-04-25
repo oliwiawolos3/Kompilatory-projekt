@@ -3,8 +3,11 @@ grammar LangX;
 prog: ( stat? NEWLINE )* ;
 
 stat:	WRITE ID		#write
-	| ID '=' expr		#assign
-	| READ ID   		#read;
+	| ID ASSIGN expr	#assign
+	| ID LBR expr RBR ASSIGN expr	#assignElem
+	| ARRAY ID LBR INT RBR	#arrayDecl
+	| READ ID   		#read
+	| READ ID LBR expr RBR	#readElem;
 
 expr: NEG expr       #neg
    | LP expr RP      #parens
@@ -17,7 +20,7 @@ expr: NEG expr       #neg
    | expr OR expr    #or
    | value           #single;
 
-value: ID
+value: ID (LBR expr RBR)?
    | INT
    | REAL
    | FLOAT
@@ -27,6 +30,11 @@ value: ID
 WRITE:	'write' ;
 
 READ:	'read' ;
+ARRAY:	'array' ;
+
+LBR:	'[' ;
+RBR:	']' ;
+
 TRUE:  'true' ;
 FALSE: 'false' ;
 AND:   'and' ;
