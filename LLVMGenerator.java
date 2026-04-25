@@ -41,6 +41,12 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @strpd, i32 0, i32 0), double "+id+")\n";
       tmp++;
    }
+   static void printf_bool(String id){
+      buffer += "%"+tmp+" = zext i1 "+id+" to i32\n";
+      tmp++;
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 %"+(tmp-1)+")\n";
+      tmp++;
+   }
 
    static void declare(String id, Boolean global){
       if( global ){
@@ -77,26 +83,6 @@ class LLVMGenerator{
     buffer += "%"+tmp+" = load double, double* "+id+"\n";
     tmp++;
    }
-
-
-   static void close_main(){
-      main_text += buffer;
-   }
-
-   static String generate(){
-      String text = "";
-      text += "declare i32 @printf(i8*, ...)\n";
-      text += "declare i32 @__isoc99_scanf(i8*, ...)\n";
-      text += "@strp = constant [4 x i8] c\"%d\\0A\\00\"\n";
-      text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
-      text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
-      text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
-      text += header_text;
-      text += "define i32 @main() nounwind{\n";
-      text += main_text;
-      text += "ret i32 0 }\n";
-      return text;
-   }
    static void add(String val1, String val2){
       buffer += "%"+tmp+" = add i32 "+val1+", "+val2+"\n";
       tmp++;
@@ -128,6 +114,54 @@ class LLVMGenerator{
    static void div_double(String val1, String val2){
       buffer += "%"+tmp+" = fdiv double "+val1+", "+val2+"\n";
       tmp++;
+   }
+   static void declare_bool(String id, Boolean global){
+      if( global ){
+         header_text += "@"+id+" = global i1 0\n";
+      } else {
+         buffer += "%"+id+" = alloca i1\n";
+      }
+   }
+   static void assign_bool(String id, String value){
+      buffer += "store i1 "+value+", i1* "+id+"\n";
+   }
+   static void load_bool(String id){
+      buffer += "%"+tmp+" = load i1, i1* "+id+"\n";
+      tmp++;
+   }
+   static void and_bool(String val1, String val2){
+      buffer += "%"+tmp+" = and i1 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void or_bool(String val1, String val2){
+      buffer += "%"+tmp+" = or i1 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void xor_bool(String val1, String val2){
+      buffer += "%"+tmp+" = xor i1 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void neg_bool(String val){
+      buffer += "%"+tmp+" = xor i1 "+val+", 1\n";
+      tmp++;
+   }
+
+   static void close_main(){
+      main_text += buffer;
+   }
+   static String generate(){
+      String text = "";
+      text += "declare i32 @printf(i8*, ...)\n";
+      text += "declare i32 @__isoc99_scanf(i8*, ...)\n";
+      text += "@strp = constant [4 x i8] c\"%d\\0A\\00\"\n";
+      text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
+      text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
+      text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
+      text += header_text;
+      text += "define i32 @main() nounwind{\n";
+      text += main_text;
+      text += "ret i32 0 }\n";
+      return text;
    }
 
 }

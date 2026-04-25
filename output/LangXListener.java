@@ -89,6 +89,18 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitAdd(LangXParser.AddContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code neg}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterNeg(LangXParser.NegContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code neg}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitNeg(LangXParser.NegContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code sub}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
@@ -113,6 +125,18 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitParens(LangXParser.ParensContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code or}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterOr(LangXParser.OrContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code or}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitOr(LangXParser.OrContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code mul}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
@@ -124,6 +148,30 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitMul(LangXParser.MulContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code and}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnd(LangXParser.AndContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code and}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnd(LangXParser.AndContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code xor}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterXor(LangXParser.XorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code xor}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitXor(LangXParser.XorContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link LangXParser#value}.
 	 * @param ctx the parse tree
