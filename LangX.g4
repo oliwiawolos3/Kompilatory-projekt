@@ -1,40 +1,38 @@
 grammar LangX;
 
-prog: ( stat? NEWLINE )* 
-    ;
+prog: ( stat? NEWLINE )* ;
 
 stat:	WRITE ID		#write
 	| ID '=' expr		#assign
-	| READ ID   		#read
-   ;
+	| READ ID   		#read;
 
-expr: value ADD expr		#add
-	| value			#single
-   ;
+expr: LP expr RP      #parens
+   | expr MUL expr   #mul   
+   | expr DIV expr   #div
+   | expr ADD expr   #add
+   | expr SUB expr   #sub
+   | value           #single;
 
 value: ID
        | INT
-       | REAL
-   ;	
+       | REAL;	
 
-WRITE:	'write' 
-   ;
+WRITE:	'write' ;
 
-READ:	'read' 
-   ;
+READ:	'read' ;
    
-ID:   ('a'..'z'|'A'..'Z')+
-   ;
+ID:   ('a'..'z'|'A'..'Z')+;
 
 REAL: '0'..'9'+ '.' '0'..'9'+;
-INT:   '0'..'9'+
-    ;
+INT:   '0'..'9'+;
 
-ADD: '+'
-    ;
+ADD: '+';
+SUB: '-' ;
+MUL: '*' ;
+DIV: '/' ;
+LP : '(' ;
+RP : ')' ;
 
-NEWLINE:	'\r'? '\n'
-    ;
+NEWLINE:	'\r'? '\n';
 
-WS:   (' '|'\t')+ { skip(); }
-    ;
+WS:   (' '|'\t')+ { skip(); };

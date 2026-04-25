@@ -53,6 +53,30 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitRead(LangXParser.ReadContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code single}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterSingle(LangXParser.SingleContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code single}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitSingle(LangXParser.SingleContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code div}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterDiv(LangXParser.DivContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code div}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitDiv(LangXParser.DivContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code add}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
@@ -65,17 +89,41 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitAdd(LangXParser.AddContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code single}
+	 * Enter a parse tree produced by the {@code sub}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterSingle(LangXParser.SingleContext ctx);
+	void enterSub(LangXParser.SubContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code single}
+	 * Exit a parse tree produced by the {@code sub}
 	 * labeled alternative in {@link LangXParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitSingle(LangXParser.SingleContext ctx);
+	void exitSub(LangXParser.SubContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code parens}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterParens(LangXParser.ParensContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code parens}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitParens(LangXParser.ParensContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code mul}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterMul(LangXParser.MulContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code mul}
+	 * labeled alternative in {@link LangXParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitMul(LangXParser.MulContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link LangXParser#value}.
 	 * @param ctx the parse tree

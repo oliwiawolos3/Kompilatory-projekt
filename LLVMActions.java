@@ -1,10 +1,16 @@
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.HashMap;
+import java.util.Stack;
 
 enum VarType { INT, REAL }
 public class LLVMActions extends LangXBaseListener {
-
+   private static class Value{
+      String name; 
+      VarType type;
+      Value(String n, VarType t){name=n; type=t;}
+   }
+    Stack<Value> stack=new Stack<>();
     HashSet<String> globalnames = new HashSet<String>();
     HashSet<String> functions = new HashSet<String>();
     HashSet<String> localnames = new HashSet<String>(); 
@@ -52,9 +58,10 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitAssign(LangXParser.AssignContext ctx) { 
       String ID = ctx.ID().getText();
-      String fullId = set_variable(ID, valueType);
-      if (valueType == VarType.INT) LLVMGenerator.assign(fullId, value);
-      else                          LLVMGenerator.assign_double(fullId, value);
+      Value v = stack.pop();
+      String fullId = set_variable(ID, v.type);
+      if (v.type == VarType.INT) LLVMGenerator.assign(fullId, v.name);
+      else                          LLVMGenerator.assign_double(fullId, v.name);
    }
 
     @Override 
@@ -87,6 +94,55 @@ public class LLVMActions extends LangXBaseListener {
          value = String.format("0x%016X", Double.doubleToLongBits(d));
          valueType = VarType.REAL;
       }
+      stack.push(new Value(value, valueType));
+   }
+
+   @Override 
+   public void exitAdd(LangXParser.AddContext ctx) {
+      Value right = stack.pop();
+      Value left  = stack.pop();
+      if( left.type != right.type ){
+         error(ctx.getStart().getLine(), "niezgodnosc typow w '+'");
+      }
+      if( left.type == VarType.INT ) LLVMGenerator.add(left.name, right.name);
+      else                            LLVMGenerator.add_double(left.name, right.name);
+      stack.push(new Value("%"+(LLVMGenerator.tmp-1), left.type));
+   }
+
+   @Override 
+   public void exitSub(LangXParser.SubContext ctx) {
+      Value right = stack.pop();
+      Value left  = stack.pop();
+      if( left.type != right.type ){
+         error(ctx.getStart().getLine(), "niezgodnosc typow w '-'");
+      }
+      if( left.type == VarType.INT ) LLVMGenerator.sub(left.name, right.name);
+      else                            LLVMGenerator.sub_double(left.name, right.name);
+      stack.push(new Value("%"+(LLVMGenerator.tmp-1), left.type));
+   }
+
+   @Override 
+   public void exitMul(LangXParser.MulContext ctx) {
+      Value right = stack.pop();
+      Value left  = stack.pop();
+      if( left.type != right.type ){
+         error(ctx.getStart().getLine(), "niezgodnosc typow w '*'");
+      }
+      if( left.type == VarType.INT ) LLVMGenerator.mul(left.name, right.name);
+      else                            LLVMGenerator.mul_double(left.name, right.name);
+      stack.push(new Value("%"+(LLVMGenerator.tmp-1), left.type));
+   }
+
+   @Override 
+   public void exitDiv(LangXParser.DivContext ctx) {
+      Value right = stack.pop();
+      Value left  = stack.pop();
+      if( left.type != right.type ){
+         error(ctx.getStart().getLine(), "niezgodnosc typow w '/'");
+      }
+      if( left.type == VarType.INT ) LLVMGenerator.div(left.name, right.name);
+      else                            LLVMGenerator.div_double(left.name, right.name);
+      stack.push(new Value("%"+(LLVMGenerator.tmp-1), left.type));
    }
 
 

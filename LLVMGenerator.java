@@ -97,5 +97,37 @@ class LLVMGenerator{
       text += "ret i32 0 }\n";
       return text;
    }
+   static void add(String val1, String val2){
+      buffer += "%"+tmp+" = add i32 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void sub(String val1, String val2){
+      buffer += "%"+tmp+" = sub i32 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void mul(String val1, String val2){
+      buffer += "%"+tmp+" = mul i32 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void div(String val1, String val2){
+      buffer += "%"+tmp+" = sdiv i32 "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void add_double(String val1, String val2){
+      buffer += "%"+tmp+" = fadd double "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void sub_double(String val1, String val2){
+      buffer += "%"+tmp+" = fsub double "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void mul_double(String val1, String val2){
+      buffer += "%"+tmp+" = fmul double "+val1+", "+val2+"\n";
+      tmp++;
+   }
+   static void div_double(String val1, String val2){
+      buffer += "%"+tmp+" = fdiv double "+val1+", "+val2+"\n";
+      tmp++;
+   }
 
 }
