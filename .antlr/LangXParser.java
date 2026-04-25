@@ -1,4 +1,4 @@
-// Generated from c:/Users/klaud/OneDrive/Dokumenty/Pulpit/PW/Semestr1/Kompilatory/projekt/LangX.g4 by ANTLR 4.13.1
+// Generated from LangX.g4 by ANTLR 4.13.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -8,17 +8,17 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 
-@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
+@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class LangXParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, WRITE=2, READ=3, TRUE=4, FALSE=5, AND=6, OR=7, XOR=8, NEG=9, ID=10, 
-		FLOAT=11, REAL=12, INT=13, ADD=14, SUB=15, MUL=16, DIV=17, LP=18, RP=19, 
-		NEWLINE=20, WS=21;
+		WRITE=1, READ=2, TRUE=3, FALSE=4, AND=5, OR=6, XOR=7, NEG=8, ID=9, FLOAT=10, 
+		REAL=11, INT=12, STRING=13, ASSIGN=14, ADD=15, SUB=16, MUL=17, DIV=18, 
+		LP=19, RP=20, NEWLINE=21, WS=22;
 	public static final int
 		RULE_prog = 0, RULE_stat = 1, RULE_expr = 2, RULE_value = 3;
 	private static String[] makeRuleNames() {
@@ -30,17 +30,17 @@ public class LangXParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'='", "'write'", "'read'", "'true'", "'false'", "'and'", "'or'", 
-			"'xor'", "'not'", null, null, null, null, "'+'", "'-'", "'*'", "'/'", 
+			null, "'write'", "'read'", "'true'", "'false'", "'and'", "'or'", "'xor'", 
+			"'not'", null, null, null, null, null, "'='", "'+'", "'-'", "'*'", "'/'", 
 			"'('", "')'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, "WRITE", "READ", "TRUE", "FALSE", "AND", "OR", "XOR", "NEG", 
-			"ID", "FLOAT", "REAL", "INT", "ADD", "SUB", "MUL", "DIV", "LP", "RP", 
-			"NEWLINE", "WS"
+			null, "WRITE", "READ", "TRUE", "FALSE", "AND", "OR", "XOR", "NEG", "ID", 
+			"FLOAT", "REAL", "INT", "STRING", "ASSIGN", "ADD", "SUB", "MUL", "DIV", 
+			"LP", "RP", "NEWLINE", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -110,6 +110,14 @@ public class LangXParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_prog; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterProg(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitProg(this);
+		}
 	}
 
 	public final ProgContext prog() throws RecognitionException {
@@ -122,13 +130,13 @@ public class LangXParser extends Parser {
 			setState(14);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 1049612L) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 2097670L) != 0)) {
 				{
 				{
 				setState(9);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 1036L) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 518L) != 0)) {
 					{
 					setState(8);
 					stat();
@@ -173,20 +181,45 @@ public class LangXParser extends Parser {
 		public TerminalNode READ() { return getToken(LangXParser.READ, 0); }
 		public TerminalNode ID() { return getToken(LangXParser.ID, 0); }
 		public ReadContext(StatContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterRead(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitRead(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class WriteContext extends StatContext {
 		public TerminalNode WRITE() { return getToken(LangXParser.WRITE, 0); }
 		public TerminalNode ID() { return getToken(LangXParser.ID, 0); }
 		public WriteContext(StatContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterWrite(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitWrite(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class AssignContext extends StatContext {
 		public TerminalNode ID() { return getToken(LangXParser.ID, 0); }
+		public TerminalNode ASSIGN() { return getToken(LangXParser.ASSIGN, 0); }
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
 		public AssignContext(StatContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterAssign(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitAssign(this);
+		}
 	}
 
 	public final StatContext stat() throws RecognitionException {
@@ -213,7 +246,7 @@ public class LangXParser extends Parser {
 				setState(19);
 				match(ID);
 				setState(20);
-				match(T__0);
+				match(ASSIGN);
 				setState(21);
 				expr(0);
 				}
@@ -261,6 +294,14 @@ public class LangXParser extends Parser {
 			return getRuleContext(ValueContext.class,0);
 		}
 		public SingleContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterSingle(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitSingle(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class DivContext extends ExprContext {
@@ -272,6 +313,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode DIV() { return getToken(LangXParser.DIV, 0); }
 		public DivContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterDiv(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitDiv(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class AddContext extends ExprContext {
@@ -283,6 +332,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode ADD() { return getToken(LangXParser.ADD, 0); }
 		public AddContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterAdd(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitAdd(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class NegContext extends ExprContext {
@@ -291,6 +348,14 @@ public class LangXParser extends Parser {
 			return getRuleContext(ExprContext.class,0);
 		}
 		public NegContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterNeg(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitNeg(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class SubContext extends ExprContext {
@@ -302,6 +367,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode SUB() { return getToken(LangXParser.SUB, 0); }
 		public SubContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterSub(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitSub(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class ParensContext extends ExprContext {
@@ -311,6 +384,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode RP() { return getToken(LangXParser.RP, 0); }
 		public ParensContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterParens(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitParens(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class OrContext extends ExprContext {
@@ -322,6 +403,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode OR() { return getToken(LangXParser.OR, 0); }
 		public OrContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterOr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitOr(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class MulContext extends ExprContext {
@@ -333,6 +422,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode MUL() { return getToken(LangXParser.MUL, 0); }
 		public MulContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterMul(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitMul(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class AndContext extends ExprContext {
@@ -344,6 +441,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode AND() { return getToken(LangXParser.AND, 0); }
 		public AndContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterAnd(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitAnd(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class XorContext extends ExprContext {
@@ -355,6 +460,14 @@ public class LangXParser extends Parser {
 		}
 		public TerminalNode XOR() { return getToken(LangXParser.XOR, 0); }
 		public XorContext(ExprContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterXor(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitXor(this);
+		}
 	}
 
 	public final ExprContext expr() throws RecognitionException {
@@ -406,6 +519,7 @@ public class LangXParser extends Parser {
 			case FLOAT:
 			case REAL:
 			case INT:
+			case STRING:
 				{
 				_localctx = new SingleContext(_localctx);
 				_ctx = _localctx;
@@ -541,10 +655,19 @@ public class LangXParser extends Parser {
 		public TerminalNode FLOAT() { return getToken(LangXParser.FLOAT, 0); }
 		public TerminalNode TRUE() { return getToken(LangXParser.TRUE, 0); }
 		public TerminalNode FALSE() { return getToken(LangXParser.FALSE, 0); }
+		public TerminalNode STRING() { return getToken(LangXParser.STRING, 0); }
 		public ValueContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_value; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).enterValue(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof LangXListener ) ((LangXListener)listener).exitValue(this);
+		}
 	}
 
 	public final ValueContext value() throws RecognitionException {
@@ -556,7 +679,7 @@ public class LangXParser extends Parser {
 			{
 			setState(62);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 15408L) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 15896L) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -605,7 +728,7 @@ public class LangXParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\u0015A\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0004\u0001\u0016A\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
 		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0001\u0000\u0003\u0000\n\b"+
 		"\u0000\u0001\u0000\u0005\u0000\r\b\u0000\n\u0000\f\u0000\u0010\t\u0000"+
 		"\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001"+
@@ -616,31 +739,31 @@ public class LangXParser extends Parser {
 		"\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002"+
 		"\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0005\u0002:\b\u0002"+
 		"\n\u0002\f\u0002=\t\u0002\u0001\u0003\u0001\u0003\u0001\u0003\u0000\u0001"+
-		"\u0004\u0004\u0000\u0002\u0004\u0006\u0000\u0001\u0002\u0000\u0004\u0005"+
-		"\n\rI\u0000\u000e\u0001\u0000\u0000\u0000\u0002\u0018\u0001\u0000\u0000"+
+		"\u0004\u0004\u0000\u0002\u0004\u0006\u0000\u0001\u0002\u0000\u0003\u0004"+
+		"\t\rI\u0000\u000e\u0001\u0000\u0000\u0000\u0002\u0018\u0001\u0000\u0000"+
 		"\u0000\u0004\"\u0001\u0000\u0000\u0000\u0006>\u0001\u0000\u0000\u0000"+
 		"\b\n\u0003\u0002\u0001\u0000\t\b\u0001\u0000\u0000\u0000\t\n\u0001\u0000"+
-		"\u0000\u0000\n\u000b\u0001\u0000\u0000\u0000\u000b\r\u0005\u0014\u0000"+
+		"\u0000\u0000\n\u000b\u0001\u0000\u0000\u0000\u000b\r\u0005\u0015\u0000"+
 		"\u0000\f\t\u0001\u0000\u0000\u0000\r\u0010\u0001\u0000\u0000\u0000\u000e"+
 		"\f\u0001\u0000\u0000\u0000\u000e\u000f\u0001\u0000\u0000\u0000\u000f\u0001"+
 		"\u0001\u0000\u0000\u0000\u0010\u000e\u0001\u0000\u0000\u0000\u0011\u0012"+
-		"\u0005\u0002\u0000\u0000\u0012\u0019\u0005\n\u0000\u0000\u0013\u0014\u0005"+
-		"\n\u0000\u0000\u0014\u0015\u0005\u0001\u0000\u0000\u0015\u0019\u0003\u0004"+
-		"\u0002\u0000\u0016\u0017\u0005\u0003\u0000\u0000\u0017\u0019\u0005\n\u0000"+
+		"\u0005\u0001\u0000\u0000\u0012\u0019\u0005\t\u0000\u0000\u0013\u0014\u0005"+
+		"\t\u0000\u0000\u0014\u0015\u0005\u000e\u0000\u0000\u0015\u0019\u0003\u0004"+
+		"\u0002\u0000\u0016\u0017\u0005\u0002\u0000\u0000\u0017\u0019\u0005\t\u0000"+
 		"\u0000\u0018\u0011\u0001\u0000\u0000\u0000\u0018\u0013\u0001\u0000\u0000"+
 		"\u0000\u0018\u0016\u0001\u0000\u0000\u0000\u0019\u0003\u0001\u0000\u0000"+
-		"\u0000\u001a\u001b\u0006\u0002\uffff\uffff\u0000\u001b\u001c\u0005\t\u0000"+
-		"\u0000\u001c#\u0003\u0004\u0002\n\u001d\u001e\u0005\u0012\u0000\u0000"+
-		"\u001e\u001f\u0003\u0004\u0002\u0000\u001f \u0005\u0013\u0000\u0000 #"+
+		"\u0000\u001a\u001b\u0006\u0002\uffff\uffff\u0000\u001b\u001c\u0005\b\u0000"+
+		"\u0000\u001c#\u0003\u0004\u0002\n\u001d\u001e\u0005\u0013\u0000\u0000"+
+		"\u001e\u001f\u0003\u0004\u0002\u0000\u001f \u0005\u0014\u0000\u0000 #"+
 		"\u0001\u0000\u0000\u0000!#\u0003\u0006\u0003\u0000\"\u001a\u0001\u0000"+
 		"\u0000\u0000\"\u001d\u0001\u0000\u0000\u0000\"!\u0001\u0000\u0000\u0000"+
-		"#;\u0001\u0000\u0000\u0000$%\n\b\u0000\u0000%&\u0005\u0010\u0000\u0000"+
-		"&:\u0003\u0004\u0002\t\'(\n\u0007\u0000\u0000()\u0005\u0011\u0000\u0000"+
-		"):\u0003\u0004\u0002\b*+\n\u0006\u0000\u0000+,\u0005\u000e\u0000\u0000"+
-		",:\u0003\u0004\u0002\u0007-.\n\u0005\u0000\u0000./\u0005\u000f\u0000\u0000"+
-		"/:\u0003\u0004\u0002\u000601\n\u0004\u0000\u000012\u0005\u0006\u0000\u0000"+
-		"2:\u0003\u0004\u0002\u000534\n\u0003\u0000\u000045\u0005\b\u0000\u0000"+
-		"5:\u0003\u0004\u0002\u000467\n\u0002\u0000\u000078\u0005\u0007\u0000\u0000"+
+		"#;\u0001\u0000\u0000\u0000$%\n\b\u0000\u0000%&\u0005\u0011\u0000\u0000"+
+		"&:\u0003\u0004\u0002\t\'(\n\u0007\u0000\u0000()\u0005\u0012\u0000\u0000"+
+		"):\u0003\u0004\u0002\b*+\n\u0006\u0000\u0000+,\u0005\u000f\u0000\u0000"+
+		",:\u0003\u0004\u0002\u0007-.\n\u0005\u0000\u0000./\u0005\u0010\u0000\u0000"+
+		"/:\u0003\u0004\u0002\u000601\n\u0004\u0000\u000012\u0005\u0005\u0000\u0000"+
+		"2:\u0003\u0004\u0002\u000534\n\u0003\u0000\u000045\u0005\u0007\u0000\u0000"+
+		"5:\u0003\u0004\u0002\u000467\n\u0002\u0000\u000078\u0005\u0006\u0000\u0000"+
 		"8:\u0003\u0004\u0002\u00039$\u0001\u0000\u0000\u00009\'\u0001\u0000\u0000"+
 		"\u00009*\u0001\u0000\u0000\u00009-\u0001\u0000\u0000\u000090\u0001\u0000"+
 		"\u0000\u000093\u0001\u0000\u0000\u000096\u0001\u0000\u0000\u0000:=\u0001"+

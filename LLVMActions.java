@@ -3,7 +3,7 @@ import java.util.Stack;
 import java.util.HashMap;
 import java.util.Stack;
 
-enum VarType { INT, REAL, FLOAT, BOOL }
+enum VarType { INT, REAL, FLOAT, BOOL, STRING }
 public class LLVMActions extends LangXBaseListener {
    private static class Value{
       String name; 
@@ -63,6 +63,7 @@ public class LLVMActions extends LangXBaseListener {
       if      (v.type == VarType.INT)   LLVMGenerator.assign(fullId, v.name);
       else if (v.type == VarType.REAL)  LLVMGenerator.assign_double(fullId, v.name);
       else if (v.type == VarType.FLOAT) LLVMGenerator.assign_float(fullId, v.name);
+      else if (v.type == VarType.STRING) LLVMGenerator.assign_string(fullId, v.name);
       else                              LLVMGenerator.assign_bool(fullId, v.name);
    }
 
@@ -75,6 +76,7 @@ public class LLVMActions extends LangXBaseListener {
                if      (t == VarType.INT)   LLVMGenerator.load("%"+ID);
                else if (t == VarType.REAL)  LLVMGenerator.load_double("%"+ID);
                else if (t == VarType.FLOAT) LLVMGenerator.load_float("%"+ID);
+               else if (t == VarType.STRING) LLVMGenerator.load_string("%"+ID);
                else                         LLVMGenerator.load_bool("%"+ID);
                valueType = t;
          } else if( globalnames.contains(ID) ) {
@@ -82,6 +84,7 @@ public class LLVMActions extends LangXBaseListener {
                if      (t == VarType.INT)   LLVMGenerator.load("@"+ID);
                else if (t == VarType.REAL)  LLVMGenerator.load_double("@"+ID);
                else if (t == VarType.FLOAT) LLVMGenerator.load_float("@"+ID);
+               else if (t == VarType.STRING) LLVMGenerator.load_string("@"+ID);
                else                         LLVMGenerator.load_bool("@"+ID);
                valueType = t;
          } else {
@@ -116,6 +119,12 @@ public class LLVMActions extends LangXBaseListener {
          value = "0";
          valueType = VarType.BOOL;
       }
+      if( ctx.STRING() != null ){
+         String raw = ctx.STRING().getText();
+         String inner = raw.substring(1, raw.length() - 1);
+         value = LLVMGenerator.defineStringLiteral(inner);
+         valueType = VarType.STRING;
+      }
       stack.push(new Value(value, valueType));
    }
 
@@ -123,6 +132,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitAdd(LangXParser.AddContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "operacja '+' nie obsluguje typu string");
+      }
       if( left.type != right.type ){
          error(ctx.getStart().getLine(), "niezgodnosc typow w '+'");
       }
@@ -137,6 +149,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitSub(LangXParser.SubContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "operacja '-' nie obsluguje typu string");
+      }
       if( left.type != right.type ){
          error(ctx.getStart().getLine(), "niezgodnosc typow w '-'");
       }
@@ -151,6 +166,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitMul(LangXParser.MulContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "operacja '*' nie obsluguje typu string");
+      }
       if( left.type != right.type ){
          error(ctx.getStart().getLine(), "niezgodnosc typow w '*'");
       }
@@ -165,6 +183,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitDiv(LangXParser.DivContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "operacja '/' nie obsluguje typu string");
+      }
       if( left.type != right.type ){
          error(ctx.getStart().getLine(), "niezgodnosc typow w '/'");
       }
@@ -178,6 +199,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitAnd(LangXParser.AndContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "'and' nie obsluguje typu string");
+      }
       if( left.type != VarType.BOOL || right.type != VarType.BOOL ){
          error(ctx.getStart().getLine(), "'and' wymaga typu bool");
       }
@@ -189,6 +213,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitOr(LangXParser.OrContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "'or' nie obsluguje typu string");
+      }
       if( left.type != VarType.BOOL || right.type != VarType.BOOL ){
          error(ctx.getStart().getLine(), "'or' wymaga typu bool");
       }
@@ -200,6 +227,9 @@ public class LLVMActions extends LangXBaseListener {
    public void exitXor(LangXParser.XorContext ctx) {
       Value right = stack.pop();
       Value left  = stack.pop();
+      if( left.type == VarType.STRING || right.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "'xor' nie obsluguje typu string");
+      }
       if( left.type != VarType.BOOL || right.type != VarType.BOOL ){
          error(ctx.getStart().getLine(), "'xor' wymaga typu bool");
       }
@@ -210,6 +240,9 @@ public class LLVMActions extends LangXBaseListener {
    @Override 
    public void exitNeg(LangXParser.NegContext ctx) {
       Value v = stack.pop();
+      if( v.type == VarType.STRING ){
+         error(ctx.getStart().getLine(), "'not' nie obsluguje typu string");
+      }
       if( v.type != VarType.BOOL ){
          error(ctx.getStart().getLine(), "'not' wymaga typu bool");
       }
@@ -232,6 +265,9 @@ public class LLVMActions extends LangXBaseListener {
       } else if( type == VarType.FLOAT ) {
          LLVMGenerator.load_float("@"+id);
          LLVMGenerator.printf_float("%"+(LLVMGenerator.tmp-1));
+      } else if( type == VarType.STRING ) {
+         LLVMGenerator.load_string("@"+id);
+         LLVMGenerator.printf_string("%"+(LLVMGenerator.tmp-1));
       } else {
          LLVMGenerator.load_bool("@"+id);
          LLVMGenerator.printf_bool("%"+(LLVMGenerator.tmp-1));
@@ -251,6 +287,7 @@ public class LLVMActions extends LangXBaseListener {
       if      ( type == VarType.INT  )  LLVMGenerator.scanf("@"+id);
       else if ( type == VarType.REAL )  LLVMGenerator.scanf_double("@"+id);
       else if ( type == VarType.FLOAT ) LLVMGenerator.scanf_float("@"+id);
+      else if ( type == VarType.STRING ) error(ctx.getStart().getLine(), "read nie obsluguje typu string");
       else error(ctx.getStart().getLine(), "read nie obsluguje typu bool");
    }
   
@@ -263,6 +300,7 @@ public class LLVMActions extends LangXBaseListener {
             if      (type == VarType.INT)   LLVMGenerator.declare(ID, true);
             else if (type == VarType.REAL)  LLVMGenerator.declare_double(ID, true);
             else if (type == VarType.FLOAT) LLVMGenerator.declare_float(ID, true);
+            else if (type == VarType.STRING) LLVMGenerator.declare_string(ID, true);
             else                            LLVMGenerator.declare_bool(ID, true);
         }
         id = "@"+ID; 
@@ -273,6 +311,7 @@ public class LLVMActions extends LangXBaseListener {
             if      (type == VarType.INT)   LLVMGenerator.declare(ID, false);
             else if (type == VarType.REAL)  LLVMGenerator.declare_double(ID, false);
             else if (type == VarType.FLOAT) LLVMGenerator.declare_float(ID, false);
+            else if (type == VarType.STRING) LLVMGenerator.declare_string(ID, false);
             else                            LLVMGenerator.declare_bool(ID, false);
         }
         id = "%"+ID; 
