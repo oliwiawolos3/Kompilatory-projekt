@@ -29,6 +29,12 @@ class LLVMGenerator{
       tmp++;      
    }
 
+   /** Skanowanie do dowolnego wskaźnika i32* (np. komórka tablicy). */
+   static void scanf_int_ptr(String ptr){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32* "+ptr+")\n";
+      tmp++;
+   }
+
 
    static void printf(String id){
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 "+id+")\n";
@@ -55,6 +61,43 @@ class LLVMGenerator{
          header_text += "@"+id+" = global i32 0\n";
       } else {
 	 buffer += "%"+id+" = alloca i32\n";
+      }
+   }
+
+   static void declare_array_int(String id, int size, Boolean global){
+      if( global ){
+         header_text += "@"+id+" = global ["+size+" x i32] zeroinitializer\n";
+      } else {
+         buffer += "%"+id+" = alloca ["+size+" x i32]\n";
+      }
+   }
+
+   /** Zwraca nazwę rejestru i32* (element tablicy). */
+   static String gep_array_int_elem(String id, int size, String idxReg, Boolean global){
+      String prefix = global ? "@" : "%";
+      buffer += "%"+tmp+" = getelementptr inbounds ["+size+" x i32], ["+size+" x i32]* "+prefix+id+", i32 0, i32 "+idxReg+"\n";
+      tmp++;
+      return "%"+(tmp-1);
+   }
+
+   static void store_int_to_ptr(String ptrReg, String valueReg){
+      buffer += "store i32 "+valueReg+", i32* "+ptrReg+"\n";
+   }
+
+   static void load_int_from_ptr(String ptrReg){
+      buffer += "%"+tmp+" = load i32, i32* "+ptrReg+"\n";
+      tmp++;
+   }
+
+   /** Wypisuje wszystkie elementy (każdy w osobnej linii, jak write dla int). */
+   static void printf_array_int(String id, int size, Boolean global){
+      String prefix = global ? "@" : "%";
+      for (int i = 0; i < size; i++) {
+         buffer += "%"+tmp+" = getelementptr inbounds ["+size+" x i32], ["+size+" x i32]* "+prefix+id+", i32 0, i32 "+i+"\n";
+         int ptrReg = tmp++;
+         buffer += "%"+tmp+" = load i32, i32* %"+ptrReg+"\n";
+         int valReg = tmp++;
+         printf("%"+valReg);
       }
    }
 
