@@ -23,6 +23,10 @@ null
 '/'
 '('
 ')'
+'['
+']'
+':'
+','
 null
 null
 
@@ -51,14 +55,21 @@ MUL
 DIV
 LP
 RP
+LBR
+RBR
+COLON
+COMMA
 NEWLINE
 WS
 
 rule names:
 prog
 stat
+writeArg
 expr
 value
+indexItem
+array
 
 
 atn:

@@ -1,7 +1,6 @@
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.HashMap;
-import java.util.Stack;
 
 enum VarType { INT, REAL, FLOAT, BOOL, STRING }
 public class LLVMActions extends LangXBaseListener {
@@ -21,6 +20,11 @@ public class LLVMActions extends LangXBaseListener {
     VarType valueType;
     String value, function;
     Boolean global;
+
+   private static boolean isArrayInWriteArg(LangXParser.ArrayContext ctx) {
+      return ctx.getParent() instanceof LangXParser.WriteArgContext
+         && ctx.getParent().getParent() instanceof LangXParser.WriteContext;
+   }
 
     @Override 
     public void enterProg(LangXParser.ProgContext ctx) { 
@@ -49,7 +53,7 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitFblock(LangXParser.FblockContext ctx) {
        if( ! localnames.contains(function) ){
-         LLVMGenerator.assign(set_variable(function, VarType.INT), "0");
+         LLVMGenerator.assign(set_variable(function, VarType.INT, 0), "0");
        }
        LLVMGenerator.load( "%"+function );
        LLVMGenerator.functionend();
@@ -112,7 +116,7 @@ public class LLVMActions extends LangXBaseListener {
          error(ctx.getStart().getLine(), "tablice zapisuje sie jako "+ID+"[indeks] = wyrazenie");
       }
       Value v = stack.pop();
-      String fullId = set_variable(ID, v.type);
+      String fullId = set_variable(ID, v.type, ctx.getStart().getLine());
       if      (v.type == VarType.INT)   LLVMGenerator.assign(fullId, v.name);
       else if (v.type == VarType.REAL)  LLVMGenerator.assign_double(fullId, v.name);
       else if (v.type == VarType.FLOAT) LLVMGenerator.assign_float(fullId, v.name);
@@ -122,6 +126,9 @@ public class LLVMActions extends LangXBaseListener {
 
     @Override 
     public void exitValue(LangXParser.ValueContext ctx) { 
+      if (ctx.array() != null) {
+         return;
+      }
       if( ctx.ID() != null ){
          String ID = ctx.ID().getText();
          if( ctx.LBR() != null ) {
@@ -363,14 +370,17 @@ public class LLVMActions extends LangXBaseListener {
          error(ctx.getStart().getLine(), "dla tablicy uzyj: read "+id+"[indeks]");
       }
       VarType type = globalTypes.get(id);
-      if      ( type == VarType.INT  )  LLVMGenerator.scanf("@"+id);
-      else if ( type == VarType.REAL )  LLVMGenerator.scanf_double("@"+id);
-      else if ( type == VarType.FLOAT ) LLVMGenerator.scanf_float("@"+id);
+      if      ( type == VarType.INT  )  { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf("@"+id); }
+      else if ( type == VarType.REAL )  { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf_double("@"+id); }
+      else if ( type == VarType.FLOAT ) { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf_float("@"+id); }
       else if ( type == VarType.STRING ) error(ctx.getStart().getLine(), "read nie obsluguje typu string");
       else error(ctx.getStart().getLine(), "read nie obsluguje typu bool");
    }
   
-    public String set_variable(String ID, VarType type){
+    public String set_variable(String ID, VarType type, int line){
+    if (arrayDims.containsKey(ID)) {
+       error(line, "nazwa "+ID+" jest tablica");
+    }
     String id;
     if( global ){
         if( ! globalnames.contains(ID) ) {

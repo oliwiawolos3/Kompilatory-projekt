@@ -20,10 +20,11 @@ public class LangXParser extends Parser {
 		XOR=10, NEG=11, ID=12, FLOAT=13, REAL=14, INT=15, STRING=16, ASSIGN=17, 
 		ADD=18, SUB=19, MUL=20, DIV=21, LP=22, RP=23, NEWLINE=24, WS=25;
 	public static final int
-		RULE_prog = 0, RULE_stat = 1, RULE_expr = 2, RULE_value = 3;
+		RULE_prog = 0, RULE_stat = 1, RULE_writeArg = 2, RULE_expr = 3, RULE_value = 4, 
+		RULE_indexItem = 5, RULE_array = 6;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"prog", "stat", "expr", "value"
+			"prog", "stat", "writeArg", "expr", "value", "indexItem", "array"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -96,6 +97,7 @@ public class LangXParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class ProgContext extends ParserRuleContext {
+		public TerminalNode EOF() { return getToken(LangXParser.EOF, 0); }
 		public List<TerminalNode> NEWLINE() { return getTokens(LangXParser.NEWLINE); }
 		public TerminalNode NEWLINE(int i) {
 			return getToken(LangXParser.NEWLINE, i);
@@ -130,9 +132,10 @@ public class LangXParser extends Parser {
 		enterRule(_localctx, 0, RULE_prog);
 		int _la;
 		try {
+			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(14);
+			setState(20);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 16781326L) != 0)) {
@@ -148,14 +151,27 @@ public class LangXParser extends Parser {
 					}
 				}
 
-				setState(11);
-				match(NEWLINE);
+					setState(17);
+					match(NEWLINE);
+					}
+					} 
 				}
-				}
-				setState(16);
+				setState(22);
 				_errHandler.sync(this);
-				_la = _input.LA(1);
+				_alt = getInterpreter().adaptivePredict(_input,1,_ctx);
 			}
+			setState(24);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 518L) != 0)) {
+				{
+				setState(23);
+				stat();
+				}
+			}
+
+			setState(26);
+			match(EOF);
 			}
 		}
 		catch (RecognitionException re) {
@@ -276,7 +292,9 @@ public class LangXParser extends Parser {
 	@SuppressWarnings("CheckReturnValue")
 	public static class WriteContext extends StatContext {
 		public TerminalNode WRITE() { return getToken(LangXParser.WRITE, 0); }
-		public TerminalNode ID() { return getToken(LangXParser.ID, 0); }
+		public WriteArgContext writeArg() {
+			return getRuleContext(WriteArgContext.class,0);
+		}
 		public WriteContext(StatContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -318,6 +336,7 @@ public class LangXParser extends Parser {
 	public final StatContext stat() throws RecognitionException {
 		StatContext _localctx = new StatContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_stat);
+		int _la;
 		try {
 			setState(42);
 			_errHandler.sync(this);
@@ -326,17 +345,47 @@ public class LangXParser extends Parser {
 				_localctx = new WriteContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(17);
+				setState(28);
 				match(WRITE);
-				setState(18);
+				setState(29);
+				writeArg();
+				}
+				break;
+			case 2:
+				_localctx = new ArrayDeclContext(_localctx);
+				enterOuterAlt(_localctx, 2);
+				{
+				setState(30);
 				match(ID);
+				setState(31);
+				match(LBR);
+				setState(32);
+				match(INT);
+				setState(37);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				while (_la==COMMA) {
+					{
+					{
+					setState(33);
+					match(COMMA);
+					setState(34);
+					match(INT);
+					}
+					}
+					setState(39);
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				}
+				setState(40);
+				match(RBR);
 				}
 				break;
 			case 2:
 				_localctx = new AssignContext(_localctx);
-				enterOuterAlt(_localctx, 2);
+				enterOuterAlt(_localctx, 4);
 				{
-				setState(19);
+				setState(55);
 				match(ID);
 				setState(20);
 				match(ASSIGN);
@@ -670,8 +719,8 @@ public class LangXParser extends Parser {
 		int _parentState = getState();
 		ExprContext _localctx = new ExprContext(_ctx, _parentState);
 		ExprContext _prevctx = _localctx;
-		int _startState = 4;
-		enterRecursionRule(_localctx, 4, RULE_expr, _p);
+		int _startState = 6;
+		enterRecursionRule(_localctx, 6, RULE_expr, _p);
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
@@ -725,7 +774,7 @@ public class LangXParser extends Parser {
 			_ctx.stop = _input.LT(-1);
 			setState(77);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,5,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
@@ -733,7 +782,7 @@ public class LangXParser extends Parser {
 					{
 					setState(75);
 					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
+					switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
 					case 1:
 						{
 						_localctx = new MulContext(new ExprContext(_parentctx, _parentState));
@@ -823,7 +872,7 @@ public class LangXParser extends Parser {
 				}
 				setState(79);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,5,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
 			}
 		}
@@ -958,7 +1007,7 @@ public class LangXParser extends Parser {
 
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 2:
+		case 3:
 			return expr_sempred((ExprContext)_localctx, predIndex);
 		}
 		return true;
