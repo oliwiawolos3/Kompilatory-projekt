@@ -9,6 +9,7 @@ class LLVMGenerator{
    static int tmp = 1;
    static int strLitCounter = 0;
    static int boundsLabelSeq = 0;
+   static final int STRING_READ_BUF = 256;
 
    static void functionstart(String id){
       main_text += buffer;
@@ -25,7 +26,6 @@ class LLVMGenerator{
       tmp = main_tmp;
    }
 
-   /** Druk: `k > ` przed odczytem w CLI (jedna linia: format `%s` + napis [nazwa] + ` > `). */
    static void read_cli_prompt(String varName) {
       String gep = defineStringLiteral(varName + " > ");
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strp_read_cli, i32 0, i32 0), i8* " + gep + ")\n";
@@ -364,6 +364,18 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strsf, i32 0, i32 0), float* "+id+")\n";
       tmp++;
    }
+
+   static void read_string(String id, boolean global){
+      String buf = (global ? "@" : "%") + id + "_readbuf";
+      String slot = (global ? "@" : "%") + id;
+      read_cli_prompt(id);
+      int ptrReg = tmp;
+      buffer += "%"+tmp+" = getelementptr inbounds ["+STRING_READ_BUF+" x i8], ["+STRING_READ_BUF+" x i8]* "+buf+", i32 0, i32 0\n";
+      tmp++;
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @str_scan_s255, i32 0, i32 0), i8* %"+ptrReg+")\n";
+      tmp++;
+      buffer += "store i8* %"+ptrReg+", i8** "+slot+"\n";
+   }
    static void printf_float(String id){
       buffer += "%"+tmp+" = fpext float "+id+" to double\n";
       tmp++;
@@ -390,8 +402,10 @@ class LLVMGenerator{
    static void declare_string(String id, Boolean global){
       if( global ){
          header_text += "@"+id+" = global i8* null\n";
+         header_text += "@"+id+"_readbuf = global ["+STRING_READ_BUF+" x i8] zeroinitializer\n";
       } else {
          buffer += "%"+id+" = alloca i8*\n";
+         buffer += "%"+id+"_readbuf = alloca ["+STRING_READ_BUF+" x i8]\n";
       }
    }
 
@@ -422,6 +436,7 @@ class LLVMGenerator{
       text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
       text += "@strsf = constant [3 x i8] c\"%f\\00\"\n";
       text += "@strpss = constant [4 x i8] c\"%s\\0A\\00\"\n";
+      text += "@str_scan_s255 = constant [6 x i8] c\"%255s\\00\"\n";
       text += "@strp_read_cli = constant [3 x i8] c\"%s\\00\"\n";
       text += "@str_arr_lbr = constant [2 x i8] c\"[\\00\"\n";
       text += "@str_arr_sep = constant [2 x i8] c\",\\00\"\n";

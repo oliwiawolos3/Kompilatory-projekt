@@ -373,7 +373,10 @@ public class LLVMActions extends LangXBaseListener {
       if      ( type == VarType.INT  )  { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf("@"+id); }
       else if ( type == VarType.REAL )  { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf_double("@"+id); }
       else if ( type == VarType.FLOAT ) { LLVMGenerator.read_cli_prompt(id); LLVMGenerator.scanf_float("@"+id); }
-      else if ( type == VarType.STRING ) error(ctx.getStart().getLine(), "read nie obsluguje typu string");
+      else if ( type == VarType.STRING ) {
+         boolean isGlobal = !localnames.contains(id);
+         LLVMGenerator.read_string(id, isGlobal);
+      }
       else error(ctx.getStart().getLine(), "read nie obsluguje typu bool");
    }
   
