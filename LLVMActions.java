@@ -407,14 +407,18 @@ public class LLVMActions extends LangXBaseListener {
          if (!arraySizes.containsKey(id)) {
             error(ctx.getStart().getLine(), id+" nie jest tablica");
          }
+         int total = arraySizes.get(id).intValue();
+         List<LangXParser.IndexItemContext> items = ar.indexItem();
          Integer colsObj = arrayMatrixCols.get(id);
          if (colsObj == null) {
-            error(ctx.getStart().getLine(), "write z przekrojem wymaga macierzy 2D (np. m[wiersz,kolumna])");
+            if (items.size() == 1 && items.get(0).COLON() != null) {
+               LLVMGenerator.printf_array_int(id, total, global);
+               return;
+            }
+            error(ctx.getStart().getLine(), "dla tablicy 1D: write "+id+" lub write "+id+"[:] (przekroje wiersza/kolumny sa tylko dla macierzy 2D)");
          }
          int cols = colsObj.intValue();
-         int total = arraySizes.get(id).intValue();
          int rows = total / cols;
-         List<LangXParser.IndexItemContext> items = ar.indexItem();
          if (items.size() != 2) {
             error(ctx.getStart().getLine(), "write z tablica: podaj dwa indeksy (np. wiersz,: albo :,kolumna)");
          }
