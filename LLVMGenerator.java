@@ -178,7 +178,8 @@ class LLVMGenerator{
       printf_plain("str_arr_rbrnl", 3);
    }
 
-   static void printf_array_matrix2d(String id, int rows, int cols, int total){
+   static void printf_array_matrix2d(String id, int rows, int cols, int total, Boolean global){
+      String prefix = global ? "@" : "%";
       if (rows == 0 || cols == 0) {
          printf_plain("str_arr_lbr", 2);
          printf_plain("str_arr_rbrnl", 3);
@@ -196,7 +197,7 @@ class LLVMGenerator{
             }
             int i = r * cols + c;
             int ptr = tmp;
-            buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 "+i+"\n";
+            buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 "+i+"\n";
             tmp++;
             buffer += "%"+tmp+" = load i32, i32* %"+ptr+"\n";
             tmp++;
@@ -206,7 +207,8 @@ class LLVMGenerator{
       printf_plain("str_arr_rbrnl", 3);
    }
 
-   static void printf_matrix_row(String id, int rows, int cols, int total, String rowReg){
+   static void printf_matrix_row(String id, int rows, int cols, int total, String rowReg, Boolean global){
+      String prefix = global ? "@" : "%";
       if (cols == 0) return;
       assert_index_in_range(rowReg, rows);
       buffer += "%"+tmp+" = mul i32 "+rowReg+", "+cols+"\n";
@@ -220,7 +222,7 @@ class LLVMGenerator{
          buffer += "%"+tmp+" = add i32 "+baseReg+", "+j+"\n";
          int offReg = tmp++;
          int gepT = tmp;
-         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 %"+offReg+"\n";
+         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 %"+offReg+"\n";
          tmp++;
          buffer += "%"+tmp+" = load i32, i32* %"+gepT+"\n";
          tmp++;
@@ -229,7 +231,8 @@ class LLVMGenerator{
       printf_plain("str_arr_rbrnl", 3);
    }
 
-   static void printf_matrix_col(String id, int rows, int cols, int total, String colReg){
+   static void printf_matrix_col(String id, int rows, int cols, int total, String colReg, Boolean global){
+      String prefix = global ? "@" : "%";
       if (rows == 0) return;
       assert_index_in_range(colReg, cols);
       printf_plain("str_arr_lbr", 2);
@@ -241,7 +244,7 @@ class LLVMGenerator{
          buffer += "%"+tmp+" = add i32 "+colReg+", "+ccs+"\n";
          int offReg = tmp++;
          int gepT = tmp;
-         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 %"+offReg+"\n";
+         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 %"+offReg+"\n";
          tmp++;
          buffer += "%"+tmp+" = load i32, i32* %"+gepT+"\n";
          tmp++;

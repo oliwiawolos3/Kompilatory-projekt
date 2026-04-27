@@ -1,6 +1,7 @@
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.HashMap;
+import java.util.List;
 
 enum VarType { INT, REAL, FLOAT, BOOL, STRING }
 public class LLVMActions extends LangXBaseListener {
@@ -15,8 +16,8 @@ public class LLVMActions extends LangXBaseListener {
     HashSet<String> localnames = new HashSet<String>(); 
     HashMap<String, VarType> globalTypes = new HashMap<String, VarType>();
     HashMap<String, VarType> localTypes  = new HashMap<String, VarType>();
-    /** Nazwy tablic całkowitych globalnych → rozmiar (tylko int[]). */
     HashMap<String, Integer> arraySizes = new HashMap<String, Integer>();
+    HashMap<String, Integer> arrayMatrixCols = new HashMap<String, Integer>();
     VarType valueType;
     String value, function;
     Boolean global;
@@ -64,22 +65,88 @@ public class LLVMActions extends LangXBaseListener {
     @Override
     public void exitArrayDecl(LangXParser.ArrayDeclContext ctx) {
       String ID = ctx.ID().getText();
-      int size = Integer.parseInt(ctx.INT().getText());
-      if (size <= 0) {
-         error(ctx.getStart().getLine(), "rozmiar tablicy musi byc dodatni");
+      int n = ctx.INT().size();
+      if (n == 0) {
+         error(ctx.getStart().getLine(), "brak rozmiaru tablicy");
+      }
+      if (n > 2) {
+         error(ctx.getStart().getLine(), "obslugiwane sa co najwyzej 2 wymiary tablicy");
+      }
+      int size = 1;
+      int d0 = 0, d1 = 0;
+      for (int i = 0; i < n; i++) {
+         int d = Integer.parseInt(ctx.INT(i).getText());
+         if (d <= 0) {
+            error(ctx.getStart().getLine(), "rozmiar tablicy musi byc dodatni");
+         }
+         if (i == 0) d0 = d;
+         if (i == 1) d1 = d;
+         size *= d;
       }
       if (arraySizes.containsKey(ID) || globalnames.contains(ID)) {
          error(ctx.getStart().getLine(), "identyfikator "+ID+" jest juz zajety");
       }
       arraySizes.put(ID, Integer.valueOf(size));
+      if (n == 2) {
+         arrayMatrixCols.put(ID, Integer.valueOf(d1));
+      } else {
+         arrayMatrixCols.remove(ID);
+      }
       LLVMGenerator.declare_array_int(ID, size, global);
+   }
+    @Override
+    public void exitArrayAssing(LangXParser.ArrayAssingContext ctx) {
+      String ID = ctx.ID().getText();
+      if (!arraySizes.containsKey(ID)) {
+         error(ctx.getStart().getLine(), ID+" nie jest tablica");
+      }
+      List<LangXParser.ExprContext> es = ctx.expr();
+      int k = es.size();
+      if (k < 2) {
+         error(ctx.getStart().getLine(), "oczekiwano co najmniej jednego indeksu i wartosci po '='");
+      }
+      Value rhs = stack.pop();
+      int nIdx = k - 1;
+      Value[] idx = new Value[nIdx];
+      for (int i = nIdx - 1; i >= 0; i--) {
+         idx[i] = stack.pop();
+      }
+      for (int i = 0; i < nIdx; i++) {
+         if (idx[i].type != VarType.INT) {
+            error(ctx.getStart().getLine(), "indeks tablicy musi byc int");
+         }
+      }
+      if (rhs.type != VarType.INT) {
+         error(ctx.getStart().getLine(), "do tablicy int mozna przypisac tylko int");
+      }
+      int total = arraySizes.get(ID).intValue();
+      if (nIdx == 1) {
+         String ptr = LLVMGenerator.gep_array_int_elem(ID, total, idx[0].name, global);
+         LLVMGenerator.store_int_to_ptr(ptr, rhs.name);
+         return;
+      }
+      if (nIdx == 2) {
+         Integer colsObj = arrayMatrixCols.get(ID);
+         if (colsObj == null) {
+            error(ctx.getStart().getLine(), "dwa indeksy wymagaja deklaracji macierzy 2D, np. "+ID+"[wiersze,kolumny]");
+         }
+         int cols = colsObj.intValue();
+         LLVMGenerator.mul(idx[0].name, String.valueOf(cols));
+         String base = "%" + (LLVMGenerator.tmp - 1);
+         LLVMGenerator.add(base, idx[1].name);
+         String flat = "%" + (LLVMGenerator.tmp - 1);
+         String ptr = LLVMGenerator.gep_array_int_elem(ID, total, flat, global);
+         LLVMGenerator.store_int_to_ptr(ptr, rhs.name);
+         return;
+      }
+      error(ctx.getStart().getLine(), "obslugiwane sa co najwyzej 2 indeksy w przypisaniu do tablicy");
    }
 
     @Override
     public void exitAssignElem(LangXParser.AssignElemContext ctx) {
       String ID = ctx.ID().getText();
       if (!arraySizes.containsKey(ID)) {
-         error(ctx.getStart().getLine(), ID+" nie jest tablica (zadeklaruj: array "+ID+" [rozmiar])");
+         error(ctx.getStart().getLine(), ID+" nie jest tablica (zadeklaruj: "+ID+"[rozmiar] lub "+ID+"[wiersze, kolumny])");
       }
       Value rhs = stack.pop();
       Value idx = stack.pop();
@@ -333,9 +400,55 @@ public class LLVMActions extends LangXBaseListener {
 
     @Override
    public void exitWrite(LangXParser.WriteContext ctx) {
-      String id = ctx.ID().getText();
+      LangXParser.WriteArgContext wa = ctx.writeArg();
+      if (wa.array() != null) {
+         LangXParser.ArrayContext ar = wa.array();
+         String id = ar.ID().getText();
+         if (!arraySizes.containsKey(id)) {
+            error(ctx.getStart().getLine(), id+" nie jest tablica");
+         }
+         Integer colsObj = arrayMatrixCols.get(id);
+         if (colsObj == null) {
+            error(ctx.getStart().getLine(), "write z przekrojem wymaga macierzy 2D (np. m[wiersz,kolumna])");
+         }
+         int cols = colsObj.intValue();
+         int total = arraySizes.get(id).intValue();
+         int rows = total / cols;
+         List<LangXParser.IndexItemContext> items = ar.indexItem();
+         if (items.size() != 2) {
+            error(ctx.getStart().getLine(), "write z tablica: podaj dwa indeksy (np. wiersz,: albo :,kolumna)");
+         }
+         boolean colon0 = items.get(0).COLON() != null;
+         boolean colon1 = items.get(1).COLON() != null;
+         if (!colon0 && colon1) {
+            Value rowIdx = stack.pop();
+            if (rowIdx.type != VarType.INT) {
+               error(ctx.getStart().getLine(), "indeks wiersza musi byc int");
+            }
+            LLVMGenerator.printf_matrix_row(id, rows, cols, total, rowIdx.name, global);
+            return;
+         }
+         if (colon0 && !colon1) {
+            Value colIdx = stack.pop();
+            if (colIdx.type != VarType.INT) {
+               error(ctx.getStart().getLine(), "indeks kolumny musi byc int");
+            }
+            LLVMGenerator.printf_matrix_col(id, rows, cols, total, colIdx.name, global);
+            return;
+         }
+         error(ctx.getStart().getLine(), "write: uzyj dokladnie jednego ':' (np. m[0,:] lub m[:,2])");
+      }
+      String id = wa.ID().getText();
       if( arraySizes.containsKey(id) ){
-         LLVMGenerator.printf_array_int(id, arraySizes.get(id).intValue(), global);
+         Integer mcols = arrayMatrixCols.get(id);
+         int total = arraySizes.get(id).intValue();
+         if (mcols != null) {
+            int c = mcols.intValue();
+            int r = total / c;
+            LLVMGenerator.printf_array_matrix2d(id, r, c, total, global);
+         } else {
+            LLVMGenerator.printf_array_int(id, total, global);
+         }
          return;
       }
       VarType type = globalTypes.get(id);
@@ -381,7 +494,7 @@ public class LLVMActions extends LangXBaseListener {
    }
   
     public String set_variable(String ID, VarType type, int line){
-    if (arrayDims.containsKey(ID)) {
+    if (arraySizes.containsKey(ID)) {
        error(line, "nazwa "+ID+" jest tablica");
     }
     String id;
