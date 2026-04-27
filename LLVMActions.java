@@ -415,7 +415,17 @@ public class LLVMActions extends LangXBaseListener {
                LLVMGenerator.printf_array_int(id, total, global);
                return;
             }
-            error(ctx.getStart().getLine(), "dla tablicy 1D: write "+id+" lub write "+id+"[:] (przekroje wiersza/kolumny sa tylko dla macierzy 2D)");
+            if (items.size() == 1 && items.get(0).expr() != null) {
+               Value idx = stack.pop();
+               if (idx.type != VarType.INT) {
+                  error(ctx.getStart().getLine(), "indeks w write musi byc int");
+               }
+               String ptr = LLVMGenerator.gep_array_int_elem(id, total, idx.name, global);
+               LLVMGenerator.load_int_from_ptr(ptr);
+               LLVMGenerator.printf("%"+(LLVMGenerator.tmp-1));
+               return;
+            }
+            error(ctx.getStart().getLine(), "dla tablicy 1D: write "+id+", write "+id+"[:] lub write "+id+"[indeks] (przekroje wiersza/kolumny sa tylko dla macierzy 2D)");
          }
          int cols = colsObj.intValue();
          int rows = total / cols;
