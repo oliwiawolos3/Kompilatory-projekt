@@ -1,13 +1,17 @@
 grammar LangX;
 
-prog: ( stat? NEWLINE )* ;
+prog: ( NEWLINE* stat )* NEWLINE* EOF;
 
-stat:	WRITE ID		#write
+stat:	WRITE writeArg		#write
+	| ID LBR INT (COMMA INT)* RBR		#arrayDecl
+	| ID LBR expr (COMMA expr)* RBR ASSIGN expr	#arrayAssing
 	| ID ASSIGN expr	#assign
 	| ID LBR expr RBR ASSIGN expr	#assignElem
-	| ARRAY ID LBR INT RBR	#arrayDecl
 	| READ ID   		#read
 	| READ ID LBR expr RBR	#readElem;
+
+writeArg: ID
+	| array;
 
 expr: NEG expr       #neg
    | LP expr RP      #parens
@@ -26,11 +30,16 @@ value: ID (LBR expr RBR)?
    | FLOAT
    | TRUE
    | FALSE
-   | STRING;
+   | STRING
+   | array;
+
+indexItem: expr
+	| COLON;
+
+array: ID LBR indexItem (COMMA indexItem)* RBR ;
 
 WRITE:	'write' ;
 READ:	'read' ;
-ARRAY:	'array' ;
 
 LBR:	'[' ;
 RBR:	']' ;
@@ -56,6 +65,8 @@ MUL: '*' ;
 DIV: '/' ;
 LP : '(' ;
 RP : ')' ;
+COLON: ':' ;
+COMMA : ',' ;
 
 NEWLINE:	'\r'? '\n';
 

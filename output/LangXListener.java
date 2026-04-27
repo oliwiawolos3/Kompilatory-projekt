@@ -29,6 +29,30 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitWrite(LangXParser.WriteContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code arrayDecl}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayDecl(LangXParser.ArrayDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrayDecl}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayDecl(LangXParser.ArrayDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code arrayAssing}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayAssing(LangXParser.ArrayAssingContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrayAssing}
+	 * labeled alternative in {@link LangXParser#stat}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayAssing(LangXParser.ArrayAssingContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code assign}
 	 * labeled alternative in {@link LangXParser#stat}.
 	 * @param ctx the parse tree
@@ -53,18 +77,6 @@ public interface LangXListener extends ParseTreeListener {
 	 */
 	void exitAssignElem(LangXParser.AssignElemContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code arrayDecl}
-	 * labeled alternative in {@link LangXParser#stat}.
-	 * @param ctx the parse tree
-	 */
-	void enterArrayDecl(LangXParser.ArrayDeclContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code arrayDecl}
-	 * labeled alternative in {@link LangXParser#stat}.
-	 * @param ctx the parse tree
-	 */
-	void exitArrayDecl(LangXParser.ArrayDeclContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code read}
 	 * labeled alternative in {@link LangXParser#stat}.
 	 * @param ctx the parse tree
@@ -88,6 +100,16 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReadElem(LangXParser.ReadElemContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#writeArg}.
+	 * @param ctx the parse tree
+	 */
+	void enterWriteArg(LangXParser.WriteArgContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#writeArg}.
+	 * @param ctx the parse tree
+	 */
+	void exitWriteArg(LangXParser.WriteArgContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code single}
 	 * labeled alternative in {@link LangXParser#expr}.
@@ -218,4 +240,24 @@ public interface LangXListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitValue(LangXParser.ValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#indexItem}.
+	 * @param ctx the parse tree
+	 */
+	void enterIndexItem(LangXParser.IndexItemContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#indexItem}.
+	 * @param ctx the parse tree
+	 */
+	void exitIndexItem(LangXParser.IndexItemContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link LangXParser#array}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray(LangXParser.ArrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LangXParser#array}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray(LangXParser.ArrayContext ctx);
 }

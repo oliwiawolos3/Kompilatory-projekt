@@ -8,6 +8,8 @@ class LLVMGenerator{
    static String buffer = "";
    static int tmp = 1;
    static int strLitCounter = 0;
+   static int boundsLabelSeq = 0;
+   static final int STRING_READ_BUF = 256;
 
    static void functionstart(String id){
       main_text += buffer;
@@ -24,8 +26,14 @@ class LLVMGenerator{
       tmp = main_tmp;
    }
 
+   static void read_cli_prompt(String varName) {
+      String gep = defineStringLiteral(varName + " > ");
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strp_read_cli, i32 0, i32 0), i8* " + gep + ")\n";
+      tmp++;
+   }
+
    static void scanf(String id){
-      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32* "+id+")\n";
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32* "+id+")\n";
       tmp++;      
    }
 
@@ -40,8 +48,18 @@ class LLVMGenerator{
       buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strp, i32 0, i32 0), i32 "+id+")\n";
       tmp++;
    }
+
+   static void printf_plain(String globalName, int byteLen){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds (["+byteLen+" x i8], ["+byteLen+" x i8]* @"+globalName+", i32 0, i32 0))\n";
+      tmp++;
+   }
+
+   static void printf_inline(String intReg){
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32 "+intReg+")\n";
+      tmp++;
+   }
    static void scanf_double(String id){
-      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), double* "+id+")\n";
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @strsd, i32 0, i32 0), double* "+id+")\n";
       tmp++;      
    }
 
@@ -108,6 +126,131 @@ class LLVMGenerator{
    static void load(String id){
       buffer += "%"+tmp+" = load i32, i32* "+id+"\n";
       tmp++;
+   }
+
+   static void declare_array(String id, int total){
+      header_text += "@"+id+" = global ["+total+" x i32] zeroinitializer\n";
+   }
+
+   static void load_array_elem(String id, int total, String idxReg){
+      int ptr = tmp;
+      buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 "+idxReg+"\n";
+      tmp++;
+      buffer += "%"+tmp+" = load i32, i32* %"+ptr+"\n";
+      tmp++;
+   }
+
+   static void store_array_elem(String id, int total, String idxReg, String valReg){
+      int ptr = tmp;
+      buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 "+idxReg+"\n";
+      tmp++;
+      buffer += "store i32 "+valReg+", i32* %"+ptr+"\n";
+   }
+
+   static void assert_index_in_range(String idxReg, int dim){
+      if (dim <= 0) return;
+      int n = ++boundsLabelSeq;
+      String ok = "idx_ok_"+n;
+      String bad = "idx_bad_"+n;
+      buffer += "%bc_ge_"+n+" = icmp sge i32 "+idxReg+", 0\n";
+      buffer += "%bc_lt_"+n+" = icmp slt i32 "+idxReg+", "+dim+"\n";
+      buffer += "%bc_ok_"+n+" = and i1 %bc_ge_"+n+", %bc_lt_"+n+"\n";
+      buffer += "br i1 %bc_ok_"+n+", label %"+ok+", label %"+bad+"\n";
+      buffer += bad+":\n";
+      buffer += "call void @llvm.trap()\n";
+      buffer += "unreachable\n";
+      buffer += ok+":\n";
+   }
+
+   static void printf_array(String id, int total){
+      printf_plain("str_arr_lbr", 2);
+      for (int i = 0; i < total; i++) {
+         if (i > 0) {
+            printf_plain("str_arr_sep", 2);
+         }
+         int ptr = tmp;
+         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* @"+id+", i32 0, i32 "+i+"\n";
+         tmp++;
+         buffer += "%"+tmp+" = load i32, i32* %"+ptr+"\n";
+         tmp++;
+         printf_inline("%"+(tmp-1));
+      }
+      printf_plain("str_arr_rbrnl", 3);
+   }
+
+   static void printf_array_matrix2d(String id, int rows, int cols, int total, Boolean global){
+      String prefix = global ? "@" : "%";
+      if (rows == 0 || cols == 0) {
+         printf_plain("str_arr_lbr", 2);
+         printf_plain("str_arr_rbrnl", 3);
+         return;
+      }
+      printf_plain("str_arr_lbr", 2);
+      for (int r = 0; r < rows; r++) {
+         for (int c = 0; c < cols; c++) {
+            if (r == 0 && c == 0) {
+               /* brak separatora przed pierwszym elementem */
+            } else if (c > 0) {
+               printf_plain("str_arr_sep", 2);
+            } else {
+               printf_plain("str_row_sep", 2);
+            }
+            int i = r * cols + c;
+            int ptr = tmp;
+            buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 "+i+"\n";
+            tmp++;
+            buffer += "%"+tmp+" = load i32, i32* %"+ptr+"\n";
+            tmp++;
+            printf_inline("%"+(tmp-1));
+         }
+      }
+      printf_plain("str_arr_rbrnl", 3);
+   }
+
+   static void printf_matrix_row(String id, int rows, int cols, int total, String rowReg, Boolean global){
+      String prefix = global ? "@" : "%";
+      if (cols == 0) return;
+      assert_index_in_range(rowReg, rows);
+      buffer += "%"+tmp+" = mul i32 "+rowReg+", "+cols+"\n";
+      int basePtr = tmp++;
+      String baseReg = "%"+basePtr;
+      printf_plain("str_arr_lbr", 2);
+      for (int j = 0; j < cols; j++) {
+         if (j > 0) {
+            printf_plain("str_arr_sep", 2);
+         }
+         buffer += "%"+tmp+" = add i32 "+baseReg+", "+j+"\n";
+         int offReg = tmp++;
+         int gepT = tmp;
+         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 %"+offReg+"\n";
+         tmp++;
+         buffer += "%"+tmp+" = load i32, i32* %"+gepT+"\n";
+         tmp++;
+         printf_inline("%"+(tmp-1));
+      }
+      printf_plain("str_arr_rbrnl", 3);
+   }
+
+   static void printf_matrix_col(String id, int rows, int cols, int total, String colReg, Boolean global){
+      String prefix = global ? "@" : "%";
+      if (rows == 0) return;
+      assert_index_in_range(colReg, cols);
+      printf_plain("str_arr_lbr", 2);
+      for (int k = 0; k < rows; k++) {
+         if (k > 0) {
+            printf_plain("str_arr_sep", 2);
+         }
+         int ccs = k * cols;
+         buffer += "%"+tmp+" = add i32 "+colReg+", "+ccs+"\n";
+         int offReg = tmp++;
+         int gepT = tmp;
+         buffer += "%"+tmp+" = getelementptr inbounds ["+total+" x i32], ["+total+" x i32]* "+prefix+id+", i32 0, i32 %"+offReg+"\n";
+         tmp++;
+         buffer += "%"+tmp+" = load i32, i32* %"+gepT+"\n";
+         tmp++;
+         printf_inline("%"+(tmp-1));
+      }
+      printf_plain("str_arr_rbrnl", 3);
    }
    static void declare_double(String id, Boolean global){
     if( global ){
@@ -221,8 +364,20 @@ class LLVMGenerator{
       tmp++;
    }
    static void scanf_float(String id){
-      buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strsf, i32 0, i32 0), float* "+id+")\n";
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strsf, i32 0, i32 0), float* "+id+")\n";
       tmp++;
+   }
+
+   static void read_string(String id, boolean global){
+      String buf = (global ? "@" : "%") + id + "_readbuf";
+      String slot = (global ? "@" : "%") + id;
+      read_cli_prompt(id);
+      int ptrReg = tmp;
+      buffer += "%"+tmp+" = getelementptr inbounds ["+STRING_READ_BUF+" x i8], ["+STRING_READ_BUF+" x i8]* "+buf+", i32 0, i32 0\n";
+      tmp++;
+      buffer += "%"+tmp+" = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @str_scan_s255, i32 0, i32 0), i8* %"+ptrReg+")\n";
+      tmp++;
+      buffer += "store i8* %"+ptrReg+", i8** "+slot+"\n";
    }
    static void printf_float(String id){
       buffer += "%"+tmp+" = fpext float "+id+" to double\n";
@@ -250,8 +405,10 @@ class LLVMGenerator{
    static void declare_string(String id, Boolean global){
       if( global ){
          header_text += "@"+id+" = global i8* null\n";
+         header_text += "@"+id+"_readbuf = global ["+STRING_READ_BUF+" x i8] zeroinitializer\n";
       } else {
          buffer += "%"+id+" = alloca i8*\n";
+         buffer += "%"+id+"_readbuf = alloca ["+STRING_READ_BUF+" x i8]\n";
       }
    }
 
@@ -274,13 +431,20 @@ class LLVMGenerator{
    static String generate(){
       String text = "";
       text += "declare i32 @printf(i8*, ...)\n";
-      text += "declare i32 @__isoc99_scanf(i8*, ...)\n";
+      text += "declare i32 @scanf(i8*, ...)\n";
+      text += "declare void @llvm.trap() nounwind noreturn\n";
       text += "@strp = constant [4 x i8] c\"%d\\0A\\00\"\n";
       text += "@strs = constant [3 x i8] c\"%d\\00\"\n";
       text += "@strpd = constant [5 x i8] c\"%lf\\0A\\00\"\n";
       text += "@strsd = constant [4 x i8] c\"%lf\\00\"\n";
       text += "@strsf = constant [3 x i8] c\"%f\\00\"\n";
       text += "@strpss = constant [4 x i8] c\"%s\\0A\\00\"\n";
+      text += "@str_scan_s255 = constant [6 x i8] c\"%255s\\00\"\n";
+      text += "@strp_read_cli = constant [3 x i8] c\"%s\\00\"\n";
+      text += "@str_arr_lbr = constant [2 x i8] c\"[\\00\"\n";
+      text += "@str_arr_sep = constant [2 x i8] c\",\\00\"\n";
+      text += "@str_row_sep = constant [2 x i8] c\";\\00\"\n";
+      text += "@str_arr_rbrnl = constant [3 x i8] c\"]\\0A\\00\"\n";
       text += header_text;
       text += "define i32 @main() nounwind{\n";
       text += main_text;
