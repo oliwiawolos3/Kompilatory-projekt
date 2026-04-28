@@ -22,11 +22,6 @@ public class LLVMActions extends LangXBaseListener {
     String value, function;
     Boolean global;
 
-   private static boolean isArrayInWriteArg(LangXParser.ArrayContext ctx) {
-      return ctx.getParent() instanceof LangXParser.WriteArgContext
-         && ctx.getParent().getParent() instanceof LangXParser.WriteContext;
-   }
-
     @Override 
     public void enterProg(LangXParser.ProgContext ctx) { 
        global = true;

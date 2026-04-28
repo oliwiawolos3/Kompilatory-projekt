@@ -37,7 +37,6 @@ class LLVMGenerator{
       tmp++;      
    }
 
-   /** Skanowanie do dowolnego wskaźnika i32* (np. komórka tablicy). */
    static void scanf_int_ptr(String ptr){
       buffer += "%"+tmp+" = call i32 (i8*, ...) @__isoc99_scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @strs, i32 0, i32 0), i32* "+ptr+")\n";
       tmp++;
@@ -107,7 +106,6 @@ class LLVMGenerator{
       tmp++;
    }
 
-   /** Wypisuje wszystkie elementy (każdy w osobnej linii, jak write dla int). */
    static void printf_array_int(String id, int size, Boolean global){
       String prefix = global ? "@" : "%";
       for (int i = 0; i < size; i++) {
@@ -189,7 +187,6 @@ class LLVMGenerator{
       for (int r = 0; r < rows; r++) {
          for (int c = 0; c < cols; c++) {
             if (r == 0 && c == 0) {
-               /* brak separatora przed pierwszym elementem */
             } else if (c > 0) {
                printf_plain("str_arr_sep", 2);
             } else {
